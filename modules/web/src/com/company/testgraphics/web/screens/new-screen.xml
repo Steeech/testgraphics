@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        caption="msg://newScreen.caption"
+        messagesPack="com.company.testgraphics.web.screens">
+    <facets>
+        <timer id="refreshTimer" delay="50" repeating="true"/>
+    </facets>
+    <layout>
+        <vbox id = "vbox" spacing="true"/>
+
+    </layout>
+</window>

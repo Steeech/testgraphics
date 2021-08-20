@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module>
+    <inherits name="com.haulmont.cuba.web.widgets.WidgetSet" />
+
+    <!-- Added widgetset from add-on -->
+    <inherits name="org.vaadin.hezamu.canvas.Widgetset" />
+</module>
