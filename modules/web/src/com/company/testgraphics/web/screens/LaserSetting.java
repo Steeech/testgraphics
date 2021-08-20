@@ -1,8 +1,10 @@
 package com.company.testgraphics.web.screens;
 
+import org.slf4j.Logger;
 import org.vaadin.hezamu.canvas.Canvas;
 
 public class LaserSetting {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(LaserSetting.class);
     private Canvas canvas;
 
     private int height, width;
@@ -21,8 +23,8 @@ public class LaserSetting {
         paintAxes();
         paintTube();
 
-        paintLaser(1, 0, 0);
-        paintLaser(-1, 0, 0);
+        paintLaser(1, 0, 0, "#C4C4C4");
+        paintLaser(-1, 0, 0, "#C4C4C4");
     }
 
     public int getHeight() {
@@ -120,15 +122,21 @@ public class LaserSetting {
     }
 
     public Canvas paintLaser(int signX, double offsetX, double offsetY){
+
+        String color = (Math.abs(offsetX)>10 || Math.abs(offsetY)>10) ? "#C65858" : "#58C65C";
+        return paintLaser(signX, offsetX, offsetY, color);
+    }
+
+    public Canvas paintLaser(int signX, double offsetX, double offsetY, String color){
         canvas.saveContext();
+        log.info(String.valueOf(offsetX));
+        log.info(String.valueOf(offsetY));
         canvas.translate(offsetX*millimetersToPixel, offsetY*millimetersToPixel);
-        String color = (offsetX>10 || offsetY>10) ? "#C65858" : "#58C65C";
         canvas.setFillStyle(color);
         canvas.setStrokeStyle(color);
         paintLaserRay(signX, 1);
         paintLaserRay(signX, -1);
         paintLaserRect(signX);
-
         canvas.restoreContext();
         return canvas;
     }

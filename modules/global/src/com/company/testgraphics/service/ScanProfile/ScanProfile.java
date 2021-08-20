@@ -2,14 +2,19 @@ package com.company.testgraphics.service.ScanProfile;
 
 import com.company.testgraphics.entity.LaserTypeEnum;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ScanProfile {
+public class ScanProfile implements Serializable {
 
     private int size;
     private List<Point> pointList;
     private Point minPoint;
     private LaserTypeEnum laserType;
+
+    public ScanProfile() {
+
+    }
 
     public ScanProfile(int size, List<Point> pointList, Point minPoint, LaserTypeEnum laserType) {
         this.size = size;

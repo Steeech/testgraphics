@@ -1,6 +1,8 @@
 package com.company.testgraphics.service.ScanProfile;
 
-public class Point {
+import java.io.Serializable;
+
+public class Point implements Serializable {
     private double x;
     private double y;
 
