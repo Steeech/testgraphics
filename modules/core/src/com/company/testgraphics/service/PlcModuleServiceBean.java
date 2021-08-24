@@ -11,11 +11,11 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,36 +51,63 @@ public class PlcModuleServiceBean implements PlcModuleService {
     }
 
     @Override
-    public Map<LaserTypeEnum, ScanProfile> getScanProfileWithoutPlc() {
+    public Map<LaserTypeEnum, ScanProfile> getScanProfileWithoutPlc() throws IOException {
         Map<LaserTypeEnum, ScanProfile> result = new HashMap<>();
 
-        File file = new File("C:\\Users\\chernomyrdina\\StudioProjects\\testgraphics\\modules\\core\\src\\com\\company\\testgraphics\\service\\jsonTxt.txt");
-        String json;
-        try {
-            json = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            log.error("Error", e);
-            return null;
-        }
+        String json = readUsingFiles("jsonTxt.txt");
+
         JSONArray jsonArray = new JSONArray(json);
-        ScanProfile scanProfileIn = new ScanProfile();
-        JSONObject jsonObject = (JSONObject) jsonArray.get(0);
-
-        JSONObject profile = (JSONObject) jsonObject.get("profile_in");
-        JSONObject min_point = (JSONObject) profile.get("min_point");
-        scanProfileIn.setMinPoint(new Point(min_point.getDouble("x"), min_point.getDouble("z")));
-        scanProfileIn.setLaserType(LaserTypeEnum.PROFILE_IN);
-
-        ScanProfile scanProfileOut = new ScanProfile();
-        jsonObject = (JSONObject) jsonArray.get(1);
-        profile = (JSONObject) jsonObject.get("profile_out");
-        min_point = (JSONObject) profile.get("min_point");
-        scanProfileOut.setMinPoint(new Point(min_point.getDouble("x"), min_point.getDouble("z")));
-        scanProfileOut.setLaserType(LaserTypeEnum.PROFILE_OUT);
+        ScanProfile scanProfileIn = getScanProfileFromJson(jsonArray, "profile_in", 0);
+        ScanProfile scanProfileOut = getScanProfileFromJson(jsonArray, "profile_out", 1);
 
         result.put(LaserTypeEnum.PROFILE_IN, scanProfileIn);
         result.put(LaserTypeEnum.PROFILE_OUT, scanProfileOut);
         return result;
+    }
+
+    private ScanProfile getScanProfileFromJson(JSONArray jsonArray, String laserType, int index){
+        ScanProfile scanProfile = new ScanProfile();
+
+        JSONObject jsonObject = jsonArray.getJSONObject(index);
+
+        JSONObject profile = jsonObject.getJSONObject(laserType);
+        JSONObject min_point = profile.getJSONObject("min_point");
+        scanProfile.setSize(profile.getInt("points_count"));
+        scanProfile.setMinPoint(new Point(min_point.getDouble("z"), min_point.getDouble("x")));
+        scanProfile.setLaserType(LaserTypeEnum.fromId(laserType));
+
+        ArrayList<Point> list = new ArrayList<>();
+        JSONObject point;
+        JSONArray pointsArray = profile.getJSONArray("points");
+        if (pointsArray != null) {
+            int len = pointsArray.length();
+            for (int i=0;i<len;i++){
+                point = pointsArray.getJSONObject(i);
+                list.add(new Point(point.getDouble("x"), point.getDouble("z")));
+            }
+        }
+
+        scanProfile.setPointList(list);
+
+        return scanProfile;
+    }
+
+    private String readUsingFiles(String fileName) throws IOException, NullPointerException {
+        String everything;
+        try (InputStream in = getClass().getResourceAsStream(fileName)) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+                StringBuilder sb = new StringBuilder();
+                String line = br.readLine();
+
+                while (line != null) {
+                    sb.append(line);
+                    sb.append(System.lineSeparator());
+                    line = br.readLine();
+                }
+                everything = sb.toString();
+            }
+        }
+        return everything;
     }
 
 }

@@ -6,7 +6,82 @@
         <timer id="refreshTimer" delay="50" repeating="true"/>
     </facets>
     <layout>
-        <vbox id = "vbox" spacing="true"/>
+        <vbox spacing="true">
+            <label value="msg://plcScreen.laserSetting" stylename="bold h3"/>
+            <hbox spacing="true">
+                <vbox spacing="true">
+                    <vbox id="vbox"/>
+                </vbox>
+                <vbox spacing="true">
+                    <hbox width="100%" height="AUTO" spacing="true">
+                        <groupBox width="100%" spacing="true">
+                            <vbox spacing="true">
+                                <label value="msg://plcScreen.console" stylename="bold h3"/>
+                                <vbox width="100%" spacing="true">
+                                    <label value="msg://plcScreen.outerLaser" stylename="bold h4"/>
+                                    <hbox spacing="true">
+                                        <label value="msg://plcScreen.vertical"/>
+                                        <label id="outerOffsetY"/>
+                                    </hbox>
+                                    <hbox spacing="true">
+                                        <label value="msg://plcScreen.horizontal"/>
+                                        <label id="outerOffsetX"/>
+                                    </hbox>
+                                </vbox>
+
+                                <vbox width="100%" spacing="true">
+                                    <label value="msg://plcScreen.innerLaser" stylename="bold h4"/>
+                                    <hbox spacing="true">
+                                        <label value="msg://plcScreen.vertical"/>
+                                        <label id="innerOffsetY"/>
+                                    </hbox>
+                                    <hbox spacing="true">
+                                        <label value="msg://plcScreen.horizontal"/>
+                                        <label id="innerOffsetX"/>
+                                    </hbox>
+                                </vbox>
+                            </vbox>
+                        </groupBox>
+                        <groupBox width="100%" spacing="true">
+                            <label value="msg://plcScreen.console" stylename="bold h3"/>
+                            <hbox width="100%" spacing="true">
+                                <button id="raise_console" caption="msg://plcScreen.raise_console"/>
+                                <button id="lower_console" caption="msg://plcScreen.lower_console"/>
+                            </hbox>
+                            <hbox width="100%" spacing="true">
+                                <button id="spread_shoulders" caption="msg://plcScreen.spread_shoulders"/>
+                                <button id="shift_shoulders" caption="msg://plcScreen.shift_shoulders"/>
+                            </hbox>
+                            <groupBox width="100%" id="speedConsole" spacing="true">
+                                <label value="msg://plcScreen.speed" stylename="h4"/>
+                                <hbox spacing="true">
+                                    <textField id="myCompositeComponent_valueField"
+                                               datatype="double"
+                                               width="80px"/>
+                                    <slider id="myCompositeComponent_slider"
+                                            orientation="horizontal"
+                                            resolution="0"
+                                            updateValueOnClick="true"
+                                            width="200px"/>
+                                </hbox>
+                            </groupBox>
+                        </groupBox>
+                    </hbox>
+
+                    <hbox spacing="true">
+                        <vbox spacing="true">
+                            <label value="msg://plcScreen.outerLaser" stylename="bold"/>
+                            <vbox id="outer"/>
+                        </vbox>
+                        <vbox spacing="true">
+                            <label value="msg://plcScreen.innerLaser" stylename="bold"/>
+                            <vbox id="inner"/>
+                        </vbox>
+
+                    </hbox>
+                </vbox>
+            </hbox>
+        </vbox>
 
     </layout>
 </window>
