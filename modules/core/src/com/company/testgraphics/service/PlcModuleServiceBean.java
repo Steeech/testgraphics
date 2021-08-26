@@ -1,20 +1,17 @@
 package com.company.testgraphics.service;
 
 import com.company.testgraphics.entity.LaserTypeEnum;
+import com.company.testgraphics.exceptions.TubeOutOfSightException;
 import com.company.testgraphics.service.ScanProfile.Point;
 import com.company.testgraphics.service.ScanProfile.ScanProfile;
-import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,39 +20,69 @@ import java.util.Map;
 public class PlcModuleServiceBean implements PlcModuleService {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(PlcModuleServiceBean.class);
+    //for local
     private String baseUrl = "http://85.113.38.35:65116";
+
+//    private String baseUrl = "http://0.0.0.0:55110";
     private String getScanProfile = "/get-scan-profile";
 
     private boolean isServerAvailable = true;
+    private int exceptionsCount = 0;
 
     @Override
-    public ScanProfile getScanProfile() {
+    public Map<LaserTypeEnum, ScanProfile> getScanProfile() throws Exception {
         if (!isServerAvailable) return null;
         RestTemplate restTemplate = new RestTemplate();
         String fullReq = baseUrl + getScanProfile;
+        Map<LaserTypeEnum, ScanProfile> resultMap = new HashMap<>();
+        String result = "";
         try {
-            String result = restTemplate.getForObject(fullReq, String.class);
+            result = restTemplate.getForObject(fullReq, String.class);
             if (result != null) {
-                if (result.equals("Error: Scanners don't see the tube!")) throw new Exception(result);
+                if (result.equals("Error: Scanners don't see the tube!")) throw new TubeOutOfSightException("Труба вне зоны видимости сканера");
+
                 JSONObject jsonObject = new JSONObject(result);
-                int stop = 0;
+                ScanProfile scanProfileIn = getScanProfileFromJson("profile_in", jsonObject);
+                ScanProfile scanProfileOut = getScanProfileFromJson("profile_out", jsonObject);
+
+                resultMap.put(LaserTypeEnum.PROFILE_IN, scanProfileIn);
+                resultMap.put(LaserTypeEnum.PROFILE_OUT, scanProfileOut);
+
+                exceptionsCount = 0;
+                return resultMap;
+            }
+            else {
+                throw new Exception("Result is Null");
             }
             //TODO exception
+        } catch (JSONException ex){
+            log.info("JSONException");
             return null;
-        } catch (Exception ex) {
+        }
+        catch (TubeOutOfSightException ex){
+            exceptionsCount++;
+            throw ex;
+        }
+        catch (Exception ex) {
             log.error("Error", ex);
+//            return null;
             //TODO exception
-            //throw new ProcessingModuleError(ex.getMessage(), ex);
-            return null;
+            exceptionsCount++;
+            throw ex;
         }
     }
 
     @Override
-    public Map<LaserTypeEnum, ScanProfile> getScanProfileWithoutPlc() throws IOException {
+    public Map<LaserTypeEnum, ScanProfile> getScanProfileWithoutPlc() throws IOException, TubeOutOfSightException {
         Map<LaserTypeEnum, ScanProfile> result = new HashMap<>();
+
 
         String json = readUsingFiles("jsonTxt.txt");
 
+        if (json.equals("Error: Scanners don't see the tube!\r\n")) {
+            exceptionsCount++;
+            throw new TubeOutOfSightException("Труба вне зоны видимости сканера");
+        }
         JSONArray jsonArray = new JSONArray(json);
         ScanProfile scanProfileIn = getScanProfileFromJson(jsonArray, "profile_in", 0);
         ScanProfile scanProfileOut = getScanProfileFromJson(jsonArray, "profile_out", 1);
@@ -66,15 +93,20 @@ public class PlcModuleServiceBean implements PlcModuleService {
     }
 
     private ScanProfile getScanProfileFromJson(JSONArray jsonArray, String laserType, int index){
-        ScanProfile scanProfile = new ScanProfile();
 
         JSONObject jsonObject = jsonArray.getJSONObject(index);
+        return getScanProfileFromJson(laserType, jsonObject);
+    }
+
+    private ScanProfile getScanProfileFromJson(String laserType, JSONObject jsonObject){
+        ScanProfile scanProfile = new ScanProfile();
 
         JSONObject profile = jsonObject.getJSONObject(laserType);
         JSONObject min_point = profile.getJSONObject("min_point");
         scanProfile.setSize(profile.getInt("points_count"));
         scanProfile.setMinPoint(new Point(min_point.getDouble("z"), min_point.getDouble("x")));
         scanProfile.setLaserType(LaserTypeEnum.fromId(laserType));
+
 
         ArrayList<Point> list = new ArrayList<>();
         JSONObject point;
@@ -110,4 +142,8 @@ public class PlcModuleServiceBean implements PlcModuleService {
         return everything;
     }
 
+    @Override
+    public int getExceptionsCount() {
+        return exceptionsCount;
+    }
 }

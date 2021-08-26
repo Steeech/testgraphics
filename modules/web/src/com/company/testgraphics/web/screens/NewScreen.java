@@ -1,13 +1,11 @@
 package com.company.testgraphics.web.screens;
 
 
-import com.company.testgraphics.entity.LaserTypeEnum;
+import com.company.testgraphics.entity.TubeKindDNomEnum;
 import com.company.testgraphics.service.PlcModuleService;
-import com.company.testgraphics.service.ScanProfile.Point;
 import com.company.testgraphics.service.ScanProfile.ScanProfile;
-import com.haulmont.cuba.gui.components.Label;
-import com.haulmont.cuba.gui.components.Timer;
-import com.haulmont.cuba.gui.components.VBoxLayout;
+import com.haulmont.cuba.gui.Notifications;
+import com.haulmont.cuba.gui.components.*;
 import com.haulmont.cuba.gui.executors.BackgroundTaskWrapper;
 import com.haulmont.cuba.gui.screen.Screen;
 import com.haulmont.cuba.gui.screen.Subscribe;
@@ -17,8 +15,6 @@ import com.vaadin.ui.Layout;
 import org.slf4j.Logger;
 
 import javax.inject.Inject;
-import java.io.IOException;
-import java.util.Map;
 
 @UiController("testgraphics_")
 @UiDescriptor("new-screen.xml")
@@ -27,6 +23,8 @@ public class NewScreen extends Screen {
     private VBoxLayout vbox;
     @Inject
     private Logger log;
+
+    TubeKindDNomEnum selectedD;
 
     private LaserSetting laserSetting;
     private LaserSetting laserIn;
@@ -51,66 +49,62 @@ public class NewScreen extends Screen {
     @Inject
     private Label<String> outerOffsetY;
 
+    private int windowHeight, windowWidth;
+    @Inject
+    private LookupField<TubeKindDNomEnum> choiceD;
+
+    private ScanProfile scanProfileIn;
+    private ScanProfile scanProfileOut;
+    @Inject
+    private Notifications notifications;
+
+
     @Subscribe
     public void onInit(InitEvent event) {
-        laserSetting = new LaserSetting(800, 720);
+
+        laserSetting = new LaserSetting(800);
+        laserSetting.setCellSize(10);
         vbox.unwrap(Layout.class).addComponent(laserSetting.getCanvas());
 
-        laserIn = new LaserSetting(400, 400);
-        laserIn.setCellSize(20);
+        laserIn = new LaserSetting(400);
+        laserIn.setCellSize(laserSetting.getCellSize() * 2);
         inner.unwrap(Layout.class).addComponent(laserIn.getCanvas());
 
-        laserOut = new LaserSetting(400, 400);
-        laserOut.setCellSize(20);
+        laserOut = new LaserSetting(400);
+        laserOut.setCellSize(laserSetting.getCellSize() * 2);
         outer.unwrap(Layout.class).addComponent(laserOut.getCanvas());
 
-        Map<LaserTypeEnum, ScanProfile> scanProfileWithoutPlc = null;
-        try {
-            scanProfileWithoutPlc = plcModuleService.getScanProfileWithoutPlc();
-            ScanProfile scanProfileIn = scanProfileWithoutPlc.get(LaserTypeEnum.PROFILE_IN);
-            ScanProfile scanProfileOut = scanProfileWithoutPlc.get(LaserTypeEnum.PROFILE_OUT);
+        choiceD.setOptionsEnum(TubeKindDNomEnum.class);
+        choiceD.setValue(TubeKindDNomEnum.FiveHundredThirty);
+        selectedD = choiceD.getValue();
 
-            Point minPointIn = scanProfileIn.getMinPoint();
-            Point minPointOut = scanProfileOut.getMinPoint();
+        refreshTimer.start();
+    }
 
-            laserSetting.drawPattern();
-            laserSetting.paintLaser(1, minPointIn.getX()-160,-minPointIn.getY());
-            laserSetting.paintLaser(-1, -1*(minPointOut.getX()-160),-minPointOut.getY());
-
-            innerOffsetX.setValue(String.format("%.3f mm", minPointIn.getX()-160));
-            innerOffsetY.setValue(String.format("%.3f mm", minPointIn.getY()));
-
-            outerOffsetX.setValue(String.format("%.3f mm", -(minPointOut.getX()-160)));
-            outerOffsetY.setValue(String.format("%.3f mm", minPointOut.getY()));
-
-
-            laserIn.drawPatterForSingleLaser();
-            laserIn.paintPoints(scanProfileIn.getPointList());
-
-            laserOut.drawPatterForSingleLaser();
-            laserOut.paintPoints(scanProfileOut.getPointList());
-//        refreshTimer.start();
-            offsetY = 1;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
+    @Subscribe
+    public void onBeforeShow(BeforeShowEvent event) {
 
     }
 
     @Subscribe("refreshTimer")
     public void onRefreshTimerTimerAction(Timer.TimerActionEvent event) {
-        offsetY++;
-        if (offsetY > 100) {
-            refreshTimer.stop();
-        } else {
-            refreshTaskWrapper.restart(UiUpdateLaser.create(this)
-                    .setLaserSetting(laserSetting)
-                    .setOffsetY(offsetY)
-                    .setOffsetX(0)
-            );
-        }
+        refreshTaskWrapper.restart(UiUpdateLaser.create(this)
+                .setPlcModuleService(plcModuleService)
+                .setLaserSetting(laserSetting)
+                .setLaserIn(laserIn)
+                .setLaserOut(laserOut)
+                .setInnerOffsetX(innerOffsetX)
+                .setInnerOffsetY(innerOffsetY)
+                .setOuterOffsetX(outerOffsetX)
+                .setOuterOffsetY(outerOffsetY)
+                .setD_nom(selectedD.getId())
+                .setNotifications(notifications)
+        );
+    }
+
+    @Subscribe("choiceD")
+    public void onChoiceDValueChange(HasValue.ValueChangeEvent event) {
+        selectedD = choiceD.getValue();
     }
 
 

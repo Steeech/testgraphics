@@ -3,21 +3,22 @@
         caption="msg://newScreen.caption"
         messagesPack="com.company.testgraphics.web.screens">
     <facets>
-        <timer id="refreshTimer" delay="50" repeating="true"/>
+        <timer id="refreshTimer" delay="100" repeating="true"/>
     </facets>
     <layout>
-        <vbox spacing="true">
-            <label value="msg://plcScreen.laserSetting" stylename="bold h3"/>
-            <hbox spacing="true">
-                <vbox spacing="true">
+        <vbox spacing="true" height="AUTO" >
+
+            <hbox id="expandHbox" spacing="true">
+                <groupBox spacing="true">
+                    <label value="msg://plcScreen.laserSetting" stylename="bold h3"/>
                     <vbox id="vbox"/>
-                </vbox>
-                <vbox spacing="true">
+                </groupBox>
+                <vbox spacing="true" width="100%">
                     <hbox width="100%" height="AUTO" spacing="true">
                         <groupBox width="100%" spacing="true">
                             <vbox spacing="true">
-                                <label value="msg://plcScreen.console" stylename="bold h3"/>
-                                <vbox width="100%" spacing="true">
+                                <label value="msg://plcScreen.offsets" stylename="bold h3"/>
+                                <groupBox spacing="true">
                                     <label value="msg://plcScreen.outerLaser" stylename="bold h4"/>
                                     <hbox spacing="true">
                                         <label value="msg://plcScreen.vertical"/>
@@ -27,9 +28,9 @@
                                         <label value="msg://plcScreen.horizontal"/>
                                         <label id="outerOffsetX"/>
                                     </hbox>
-                                </vbox>
+                                </groupBox>
 
-                                <vbox width="100%" spacing="true">
+                                <groupBox spacing="true">
                                     <label value="msg://plcScreen.innerLaser" stylename="bold h4"/>
                                     <hbox spacing="true">
                                         <label value="msg://plcScreen.vertical"/>
@@ -39,10 +40,10 @@
                                         <label value="msg://plcScreen.horizontal"/>
                                         <label id="innerOffsetX"/>
                                     </hbox>
-                                </vbox>
+                                </groupBox>
                             </vbox>
                         </groupBox>
-                        <groupBox width="100%" spacing="true">
+                        <groupBox width="100%" height="100%" spacing="true"  expand="expandLabel">
                             <label value="msg://plcScreen.console" stylename="bold h3"/>
                             <hbox width="100%" spacing="true">
                                 <button id="raise_console" caption="msg://plcScreen.raise_console"/>
@@ -65,10 +66,12 @@
                                             width="200px"/>
                                 </hbox>
                             </groupBox>
+                            <lookupField id="choiceD" width="100%" nullOptionVisible="false"/>
+                            <label  id="expandLabel"/>
                         </groupBox>
                     </hbox>
 
-                    <hbox spacing="true">
+                    <hbox  spacing="true" width="100%">
                         <vbox spacing="true">
                             <label value="msg://plcScreen.outerLaser" stylename="bold"/>
                             <vbox id="outer"/>

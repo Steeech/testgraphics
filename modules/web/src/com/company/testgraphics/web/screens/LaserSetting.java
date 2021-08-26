@@ -15,17 +15,21 @@ public class LaserSetting {
     private int cellSize = 10;
     private double millimetersToPixel = ((double) cellSize)/20;
 
-    public LaserSetting(int height, int width) {
+    public LaserSetting(int height) {
         this.canvas = new Canvas();
         setHeight(height);
-        setWidth(width);
+        setWidth(height);
     }
 
+
     public void drawPattern(){
+
         paintRoundedRect();
+
         this.setCellSize(cellSize*2);
         paintGrid(false);
         this.setCellSize(cellSize/2);
+
         paintCenterAxes();
         paintTube();
 
@@ -33,12 +37,14 @@ public class LaserSetting {
         paintLaser(-1, 0, 0, "#C4C4C4");
     }
 
-    public void drawPatterForSingleLaser(){
+    public void drawPatterForSingleLaser(int D_nom){
         paintRoundedRect();
         paintGrid(true);
         paintBottomAxes();
+        paintTube(D_nom);
         paintLaserArea(1);
         paintLaserArea(-1);
+
 
     }
 
@@ -51,6 +57,7 @@ public class LaserSetting {
         this.halfH = height / 2;
         this.canvas.setHeight(height + "px");
     }
+
 
     public int getWidth() {
         return width;
@@ -115,8 +122,6 @@ public class LaserSetting {
             canvas.lineTo(width, k * cellSize);
             if (isSingleLaser)
                 canvas.fillText(String.valueOf((rows-k-2)*20), halfW+5, k * cellSize+5, 20);
-
-
         }
 
         for (k = 1; k < columns; k++) {
@@ -157,7 +162,6 @@ public class LaserSetting {
     }
 
     private Canvas paintTube() {
-
         canvas.saveContext();
         canvas.beginPath();
 
@@ -178,8 +182,6 @@ public class LaserSetting {
 
     public Canvas paintLaser(int signX, double offsetX, double offsetY, String color){
         canvas.saveContext();
-        log.info(String.valueOf(offsetX));
-        log.info(String.valueOf(offsetY));
         canvas.translate(offsetX*millimetersToPixel, offsetY*millimetersToPixel);
         canvas.setFillStyle(color);
         canvas.setStrokeStyle(color);
@@ -266,9 +268,6 @@ public class LaserSetting {
         canvas.translate(halfW, height-2*cellSize);
         canvas.beginPath();
 
-        int singK = -signX;
-        int signB = signX;
-
         canvas.moveTo(0, 0);
 
         canvas.lineTo(signX*85*millimetersToPixel, 0);
@@ -284,6 +283,23 @@ public class LaserSetting {
 
         return canvas;
     }
+
+
+    private Canvas paintTube(int D_nom) {
+        canvas.saveContext();
+        canvas.beginPath();
+        canvas.translate(halfW, height-2*cellSize);
+        int radius = D_nom/2;
+
+        canvas.arc(0, -(radius+160)*millimetersToPixel, radius*millimetersToPixel, 0, Math.PI, true);
+
+        canvas.setStrokeStyle("#E5E5E5");
+        canvas.setLineWidth(3);
+        canvas.stroke();
+        canvas.closePath();
+        canvas.restoreContext();
+        return canvas;
+    }
     
     public Canvas paintPoints(List<Point> pointList){
         canvas.saveContext();
@@ -292,12 +308,30 @@ public class LaserSetting {
         canvas.setFillStyle(255,0,0);
 
         for (Point point : pointList) {
-            canvas.fillRect(point.getX(), -point.getY(), 1, 1);
+            canvas.fillRect(point.getX()*millimetersToPixel, -point.getY()*millimetersToPixel, 1, 1);
         }
         canvas.closePath();
         canvas.restoreContext();
 
         return canvas;
     }
+
+    public Canvas paintMinPoint(Point minPoint){
+        canvas.saveContext();
+        canvas.translate(halfW, height-2*cellSize);
+        canvas.beginPath();
+        canvas.setStrokeStyle(255,0,0);
+
+        canvas.moveTo(minPoint.getY()*millimetersToPixel, -minPoint.getX()*millimetersToPixel);
+        canvas.lineTo(minPoint.getY()*millimetersToPixel, 0);
+
+        canvas.setLineWidth(0.5);
+        canvas.stroke();
+        canvas.closePath();
+        canvas.restoreContext();
+
+        return canvas;
+    }
+
 
 }
