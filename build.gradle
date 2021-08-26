@@ -213,3 +213,15 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
 }
 restart.finalizedBy start
 
+task buildWar(type: CubaWarBuilding) {
+    includeJdbcDriver = true
+    appProperties = ['cuba.automaticDatabaseUpdate': true,
+                     'cuba.dataSource.username'    : 'webappdb',
+                     'cuba.dataSource.password'    : 'Fds!Dsg3!',
+                     'cuba.dataSource.dbName'      : 'tubecontrol',
+                     'cuba.dataSource.host'        : 'localhost',
+                     'cuba.dataSource.port'        : '5432',
+                     'cuba.dataSourceProvider'     : 'application']
+    webXmlPath = 'modules/web/web/WEB-INF/single-war-web.xml'
+    logbackConfigurationFile = 'etc/war-logback.xml'
+}
