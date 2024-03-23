@@ -20,10 +20,7 @@ import java.util.Map;
 public class PlcModuleServiceBean implements PlcModuleService {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(PlcModuleServiceBean.class);
-    //for local
-    private String baseUrl = "http://85.113.38.35:65116";
-
-//    private String baseUrl = "http://0.0.0.0:55110";
+    private String baseUrl = "http://0.0.0.0:8080";
     private String getScanProfile = "/get-scan-profile";
 
     private boolean isServerAvailable = true;
